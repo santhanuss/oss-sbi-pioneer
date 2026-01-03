@@ -1,17 +1,12 @@
 import yaml
-import os
 
-# Resolve project root
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CONFIG_PATH = os.path.join(BASE_DIR, "configs", "sbi_services.yaml")
-
-def load_sbi_services():
+def load_sbi_services(config_path="configs/sbi_services.yaml"):
     """
     Load SBI services from YAML config.
     Acts as OSS inventory source.
     """
     try:
-        with open(CONFIG_PATH, "r") as f:
+        with open(config_path, "r") as f:
             data = yaml.safe_load(f)
             return data.get("services", [])
     except Exception as e:
@@ -19,9 +14,10 @@ def load_sbi_services():
         return []
 
 def discover_services():
+    services = load_sbi_services()
     inventory = []
 
-    for svc in load_sbi_services():
+    for svc in services:
         inventory.append({
             "name": svc.get("name"),
             "endpoint": svc.get("endpoint"),
@@ -32,5 +28,7 @@ def discover_services():
     return inventory
 
 if __name__ == "__main__":
-    for service in discover_services():
-        print(service)
+    services = discover_services()
+    print("📡 SBI Service Inventory")
+    for s in services:
+        print(f"- {s['name']} | Auth={s['auth_enabled']} | TLS={s['tls_enabled']}")
